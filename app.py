@@ -1,18 +1,24 @@
 import streamlit as st
 import os
 from langchain.chains import LLMChain
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 
 st.set_page_config(page_title="Blog Generator", layout="wide")
-
 st.title("✨ Blog Generator")
-st.subheader("Create professional blog posts with the power of Gemini AI")
+st.subheader("Create professional blog posts")
 
 # Sidebar for API key and settings
 with st.sidebar:
     st.header("Settings")
-    google_api_key = st.text_input("Google API Key", type="password")
+    groq_api_key = st.text_input("Groq API Key", type="password")
+    
+    # st.subheader("Model Selection")
+    # model_name = st.selectbox(
+    #     "Select Model",
+    #     ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"],
+    #     index=0
+    # )
     
     st.subheader("Blog Settings")
     blog_tone = st.selectbox(
@@ -39,15 +45,18 @@ with col1:
     
     keywords = st.text_input("Keywords (comma separated)", "")
     
+    # Temperature setting
+    temperature = st.slider("Temperature (Creativity)", 0.0, 1.0, 0.7, 0.1)
+    
     generate_button = st.button("Generate Blog", type="primary")
 
 # Function to generate blog content
-def generate_blog(topic, tone, word_count, include_sections, target_audience, keywords, title=""):
-    if not google_api_key:
-        st.error("Please enter your Google API Key in the sidebar")
+def generate_blog(topic, tone, word_count, include_sections, target_audience, keywords, model, temp, title=""):
+    if not groq_api_key:
+        st.error("Please enter your Groq API Key in the sidebar")
         return None
     
-    os.environ["GOOGLE_API_KEY"] = google_api_key
+    os.environ["GROQ_API_KEY"] = groq_api_key
     
     sections_str = ", ".join(include_sections)
     keywords_str = keywords if keywords else "none specified"
@@ -76,7 +85,7 @@ def generate_blog(topic, tone, word_count, include_sections, target_audience, ke
         template=prompt_template
     )
     
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0.7)
+    llm = ChatGroq(model=model, temperature=temp)
     chain = LLMChain(llm=llm, prompt=prompt)
     
     try:
@@ -96,6 +105,8 @@ if generate_button and blog_topic:
             include_sections,
             target_audience,
             keywords,
+            # model_name,
+            temperature,
             blog_title
         )
         
@@ -110,5 +121,24 @@ if generate_button and blog_topic:
                     file_name="generated_blog.md",
                     mime="text/markdown"
                 )
+                
+                # Copy to clipboard button
+                st.button("Copy to Clipboard", 
+                          help="Copy blog content to clipboard",
+                          on_click=lambda: st.write('<script>navigator.clipboard.writeText(`' + 
+                                                  blog_content.replace('`', '\\`') + 
+                                                  '`);</script>', unsafe_allow_html=True))
 elif generate_button:
     st.warning("Please enter a blog topic to generate content")
+
+# Add footer with information
+st.markdown("---")
+st.markdown("### About this Blog Generator")
+st.markdown("""
+This application uses Groq's API to generate blog content. Groq provides fast inference for various open-source models.
+Key features:
+- Choose from multiple AI models (Llama 3, Mixtral, Gemma)
+- Adjust temperature to control creativity
+- Customize blog sections
+- Download or copy your generated content
+""")
