@@ -1,4 +1,27 @@
-streamlit==1.32.0
-langchain==0.1.4
-langchain-groq==0.1.5
-python-dotenv==1.0.0
+# Core Streamlit framework
+streamlit>=1.28.0
+
+# HTTP requests for API calls
+requests>=2.31.0
+
+# JSON handling (built-in with Python, but listed for clarity)
+# json - built-in module
+
+# Date and time handling (built-in with Python)
+# datetime - built-in module
+# time - built-in module
+
+# Optional: For enhanced markdown processing (if needed)
+markdown>=3.5.0
+
+# Optional: For better error handling and logging
+python-dotenv>=1.0.0
+
+# Optional: For input validation
+validators>=0.22.0
+
+# Optional: For better text processing
+beautifulsoup4>=4.12.0
+
+# Optional: For advanced markdown features
+pymdown-extensions>=10.3.0
